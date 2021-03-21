@@ -51,7 +51,7 @@ class guisetup():
             self.noteWindow.destroy()
             self.loggedin(noteslist,contentlist)
 
-    def newNote(self):
+    def newNote(self,event=None):
         self.noteWindow = tk.Tk()
 
         nameFrame = tk.Frame(self.noteWindow)
@@ -77,27 +77,30 @@ class guisetup():
         self.noteWindow.mainloop()
         
     def deleteNote(self,pos,allnotes):
-        uipos = list(pos)[0]
-        pos = len(allnotes) - list(pos)[0] - 1
-        with open("database.json","r+") as dbfile:
-            db = json.load(dbfile)
-            notes = db["notes"]
-            del notes[pos]
-            del self.noteslist[pos]
-            del self.contentlist[pos]
-            dbfile.seek(0)
-            dbfile.truncate(0) # Wipe file
-            # Replace 
-            self.write_json({
-                "notes": notes
-            })
-            print("Deleted note " + str(pos))
-            self.lb.delete(uipos)
-            self.contentDisplay.configure(state="normal")
-            self.contentDisplay.delete(1.0,"end")
-            self.contentDisplay.configure(state="disabled")
+        decision = tk.messagebox.askyesno(title="Are you sure?", message="Note deletion is permanent, do you wish to proceed?")
+        if decision == True:
+            uipos = list(pos)[0]
+            pos = len(allnotes) - list(pos)[0] - 1
+            with open("database.json","r+") as dbfile:
+                db = json.load(dbfile)
+                notes = db["notes"]
+                del notes[pos]
+                del self.noteslist[pos]
+                del self.contentlist[pos]
+                dbfile.seek(0)
+                dbfile.truncate(0) # Wipe file
+                # Replace 
+                self.write_json({
+                    "notes": notes
+                })
+                print("Deleted note " + str(pos))
+                self.lb.delete(uipos)
+                self.contentDisplay.configure(state="normal")
+                self.contentDisplay.delete(1.0,"end")
+                self.contentDisplay.configure(state="disabled")
+        return
 
-    def editNoteGUI(self,cursor,currentName,currentContent):
+    def editNoteGUI(self,cursor,currentName,currentContent,event=None):
         self.editWindow = tk.Tk()
 
         nameFrame = tk.Frame(self.editWindow)
@@ -167,7 +170,7 @@ class guisetup():
 
         self.timeLabel.configure(text="Created At: " + self.datelist[num])
 
-    def getPassword(self):
+    def getPassword(self,event=None):
         self.userpass = self.passBox.get()
         #print(self.passBox.get())
         with open("database.json","r") as db:
@@ -239,9 +242,9 @@ class guisetup():
         newPassTitle.pack(in_=windowMiddle)
 
         self.newpassBox = tk.Entry(self.frWindow, width=15)
-        self.newpassBox.configure(show="*")
+        self.newpassBox.configure(show="•")
         self.newpassBox.pack(in_=windowMiddle)
-        self.newpassBox.bind('<Control-a>',self.callback)
+        self.newpassBox.bind('<Control-a>',self.lock_callback)
 
         self.finishButton = tk.Button(text="Finish Setup",command=lambda: self.finishSetup(self.newpassBox.get()))
         self.finishButton.pack(in_=windowMiddle)
@@ -266,20 +269,22 @@ class guisetup():
         title.pack(side="top",in_=windowMiddle)
 
         self.passBox = tk.Entry(self.loginWindow,width=15,bg='black',fg='white')
-        self.passBox.configure(show="*")
+        self.passBox.configure(show="•")
         self.passBox.pack(in_=windowMiddle)
+        self.passBox.focus()
         self.passBox.bind('<Control-a>',self.callback)
 
         self.loginButton = tk.Button(text="Unlock",command=self.getPassword,bg='black',fg='white')
-        self.loginButton.pack(in_=windowMiddle)
+        self.loginButton.pack(in_=windowMiddle,pady=3)
         
+        self.loginWindow.bind('<Return>', self.getPassword)
 
         self.loginWindow.configure(bg='black')
         self.loginWindow.geometry("512x512")
         self.loginWindow.title("SafeNotes - Locked")
         self.loginWindow.mainloop()        
     
-    def lockApp(self):
+    def lockApp(self,event=None):
         self.window.destroy()
         try:
             self.noteWindow.destroy()
@@ -293,6 +298,7 @@ class guisetup():
         self.userpass = None
         
         self.createGUI()
+        return 'break'
 
     def loggedin(self,noteslist,contentlist):
         self.noteslist = noteslist
@@ -320,6 +326,7 @@ class guisetup():
 
         newButton = tk.Button(text="New",command=self.newNote)
         newButton.pack(in_=self.right,fill="x",side='left')
+        
         self.editbutton = tk.Button(text="Edit",command=lambda: self.editNoteGUI(self.lb.curselection(),self.lb.get(self.lb.curselection()),self.contentlist[list(self.lb.curselection())[0]]))
         self.editbutton.pack(in_=self.right,fill="x",side='left')
         self.deletebutton = tk.Button(text="Delete",command=lambda: self.deleteNote(self.lb.curselection(),self.noteslist))
@@ -333,6 +340,10 @@ class guisetup():
 
         self.lockButton = tk.Button(self.window,text="Lock",bg='grey',command=lambda: self.lockApp())
         self.lockButton.pack(in_=self.bottomNote,side='right',anchor='se')
+
+        self.window.bind('<Control-l>', self.lockApp)
+        self.window.bind('<Control-n>', self.newNote)
+        self.window.bind('<Control-e>', self.editNoteGUI)
 
         self.window.iconphoto(False,tk.PhotoImage(file='utils/icon.png'))
         self.window.configure(bg='grey')
