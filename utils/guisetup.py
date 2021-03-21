@@ -72,7 +72,7 @@ class guisetup():
         createButton.pack(in_=contentFrame,pady=25)
 
         self.noteWindow.title("New Secure Note")
-        
+        self.noteWindow.configure(bg='grey')
         self.noteWindow.geometry("512x512")
         self.noteWindow.mainloop()
         
@@ -163,7 +163,9 @@ class guisetup():
         self.contentDisplay.delete(1.0,"end")
         self.contentDisplay.insert(1.0,secondlist[num])
         self.contentDisplay.configure(state="disabled")
-        self.contentDisplay.pack(anchor='e',side="right",fill="both")
+        self.contentDisplay.pack(anchor='e',side="right",fill="x")
+
+        self.timeLabel.configure(text="Created At: " + self.datelist[num])
 
     def getPassword(self):
         self.userpass = self.passBox.get()
@@ -181,12 +183,15 @@ class guisetup():
             self.loginWindow.destroy()
             counter = len(db["notes"])
             contentlist = []
+            self.datelist = []
             for x in db["notes"]:
                 noteslist.append(aes.decrypt(x["name"].encode(),self.userpass).decode('utf-8'))
                 contentlist.append(aes.decrypt(x["content"].encode(),self.userpass).decode('utf-8'))
+                self.datelist.append(aes.decrypt(x["time"].encode(),self.userpass).decode('utf-8'))
                 counter -= 1
             noteslist.reverse()
             contentlist.reverse()
+            self.datelist.reverse()
             self.loggedin(noteslist,contentlist)
             #contentlist.reverse()
 
@@ -254,23 +259,40 @@ class guisetup():
         
         self.loginWindow = tk.Tk()
         
-        windowMiddle = tk.Frame(self.loginWindow)
+        windowMiddle = tk.Frame(self.loginWindow,bg='black')
         windowMiddle.pack(expand="yes",anchor="center")
 
-        title = tk.Label(text="SafeNotes",font=("Arial", 25))
+        title = tk.Label(text="SafeNotes",font=("Arial", 25),bg='black',fg='white')
         title.pack(side="top",in_=windowMiddle)
 
-        self.passBox = tk.Entry(self.loginWindow,width=15)
+        self.passBox = tk.Entry(self.loginWindow,width=15,bg='black',fg='white')
         self.passBox.configure(show="*")
         self.passBox.pack(in_=windowMiddle)
         self.passBox.bind('<Control-a>',self.callback)
 
-        self.loginButton = tk.Button(text="Login",command=self.getPassword)
+        self.loginButton = tk.Button(text="Unlock",command=self.getPassword,bg='black',fg='white')
         self.loginButton.pack(in_=windowMiddle)
+        
 
+        self.loginWindow.configure(bg='black')
         self.loginWindow.geometry("512x512")
-        self.loginWindow.title("SafeNotes - Login")
+        self.loginWindow.title("SafeNotes - Locked")
         self.loginWindow.mainloop()        
+    
+    def lockApp(self):
+        self.window.destroy()
+        try:
+            self.noteWindow.destroy()
+        except:
+            print("noteWindow already destroyed")
+        try:
+            self.editNoteGUI.destroy()
+        except:
+            print("editNoteGUI already destroyed")
+        
+        self.userpass = None
+        
+        self.createGUI()
 
     def loggedin(self,noteslist,contentlist):
         self.noteslist = noteslist
@@ -286,7 +308,7 @@ class guisetup():
         self.lb.pack(side='left',fill="both",expand=True)
         for x in self.noteslist:
             self.lb.insert("end",x)
-            self.lb.bind("<<ListboxSelect>>", lambda y: self.contentPopout(self.lb.curselection(),self.noteslist,self.contentlist))
+            self.lb.bind("<<ListboxSelect>>", lambda y: self.contentPopout(self.lb.curselection(),self.datelist,self.contentlist))
 
         self.window.title("SafeNotes - Encrypted Note App")
         #self.window.geometry("")
@@ -303,6 +325,14 @@ class guisetup():
         self.deletebutton = tk.Button(text="Delete",command=lambda: self.deleteNote(self.lb.curselection(),self.noteslist))
         self.deletebutton.pack(in_=self.right,side='left')
 
+        self.bottomNote = tk.Frame(self.window,bg='grey')
+        self.bottomNote.pack(side="bottom",fill='y')
+
+        self.timeLabel = tk.Label(self.window,bg='grey',fg='white')
+        self.timeLabel.pack(in_=self.bottomNote,side='left')
+
+        self.lockButton = tk.Button(self.window,text="Lock",bg='grey',command=lambda: self.lockApp())
+        self.lockButton.pack(in_=self.bottomNote,side='right',anchor='se')
 
         self.window.iconphoto(False,tk.PhotoImage(file='utils/icon.png'))
         self.window.configure(bg='grey')
