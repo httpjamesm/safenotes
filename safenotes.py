@@ -18,11 +18,14 @@ class main():
         utils().createDbFile()
         utils().createSettingsFile()
         utils().addToDb(name,content)
+        exit()
     if "--view" in allargs:
         utils().viewNotes()
-    
+        exit()
+
     if "--change" in allargs:
         utils().changePass()
+        exit()
     
     
     guisetup().createGUI()
