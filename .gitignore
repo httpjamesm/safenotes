@@ -1,0 +1,6 @@
+__pycache__/
+utils/__pycache__/
+utils/classes/__pycache__/
+
+settings.json
+database.json
