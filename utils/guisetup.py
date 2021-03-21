@@ -85,15 +85,15 @@ class guisetup():
                 db = json.load(dbfile)
                 notes = db["notes"]
                 del notes[pos]
-                del self.noteslist[pos]
-                del self.contentlist[pos]
+                del self.noteslist[uipos]
+                del self.contentlist[uipos]
                 dbfile.seek(0)
                 dbfile.truncate(0) # Wipe file
                 # Replace 
                 self.write_json({
                     "notes": notes
                 })
-                print("Deleted note " + str(pos))
+                print("Deleted note " + str(pos) + "\nDeleted UI " + str(uipos))
                 self.lb.delete(uipos)
                 self.contentDisplay.configure(state="normal")
                 self.contentDisplay.delete(1.0,"end")
@@ -123,12 +123,17 @@ class guisetup():
         createButton.pack(in_=contentFrame,pady=25)
 
         self.editWindow.title("Edit Secure Note")
-        
+        self.editWindow.configure(bg='grey')
         self.editWindow.geometry("512x512")
         self.editWindow.mainloop()     
         
 
     def editNote(self,cursor,newname,newcontent):
+        if "\n" in newname:
+            newname = list(newname)
+            del newname[-1]
+            newname = ''.join(newname)
+
         pos = cursor
         allnotes = self.noteslist
         uipos = list(pos)[0]
@@ -162,6 +167,7 @@ class guisetup():
 
     def contentPopout(self,num,thelist, secondlist):
         num = list(num)[0]
+        self.noteTitle.configure(text=self.noteslist[num])
         self.contentDisplay.configure(state="normal")
         self.contentDisplay.delete(1.0,"end")
         self.contentDisplay.insert(1.0,secondlist[num])
@@ -332,6 +338,9 @@ class guisetup():
         self.deletebutton = tk.Button(text="Delete",command=lambda: self.deleteNote(self.lb.curselection(),self.noteslist))
         self.deletebutton.pack(in_=self.right,side='left')
 
+        self.noteTitle = tk.Label(self.window)
+        self.noteTitle.pack(side="top",pady=10)
+
         self.bottomNote = tk.Frame(self.window,bg='grey')
         self.bottomNote.pack(side="bottom",fill='y')
 
@@ -343,7 +352,7 @@ class guisetup():
 
         self.window.bind('<Control-l>', self.lockApp)
         self.window.bind('<Control-n>', self.newNote)
-        self.window.bind('<Control-e>', self.editNoteGUI)
+        self.window.bind('<Control-e>',lambda p: self.editNoteGUI(self.lb.curselection(),self.lb.get(self.lb.curselection()),self.contentlist[list(self.lb.curselection())[0]]))
 
         self.window.iconphoto(False,tk.PhotoImage(file='utils/icon.png'))
         self.window.configure(bg='grey')
