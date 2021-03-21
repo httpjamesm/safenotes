@@ -303,6 +303,8 @@ class guisetup():
         self.deletebutton = tk.Button(text="Delete",command=lambda: self.deleteNote(self.lb.curselection(),self.noteslist))
         self.deletebutton.pack(in_=self.right,side='left')
 
+
+        self.window.iconphoto(False,tk.PhotoImage(file='utils/icon.png'))
         self.window.configure(bg='grey')
         self.window.minsize(512,512)
         self.window.mainloop()
