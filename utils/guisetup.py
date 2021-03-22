@@ -25,11 +25,12 @@ class guisetup():
         # Add a note to the db file
 
         with open("database.json") as json_file:
+            now = datetime.datetime.now()
             data = json.load(json_file)
             temp = data["notes"]
             encname = aes.encrypt(name,self.userpass)
             enccontent = aes.encrypt(content,self.userpass)
-            enctime = aes.encrypt(str(datetime.datetime.now()),self.userpass)
+            enctime = aes.encrypt(str(now),self.userpass)
             temp.append({
                 "name":encname.decode('utf-8'),
                 "time":enctime.decode('utf-8'),
@@ -47,9 +48,17 @@ class guisetup():
                 counter -= 1
             noteslist.reverse()
             contentlist.reverse()
-            self.window.destroy()
-            self.noteWindow.destroy()
-            self.loggedin(noteslist,contentlist)
+            
+            self.lb.insert(0,name)
+            self.noteslist.insert(0,name)
+            self.contentlist.insert(0,content)
+            self.datelist.insert(0,str(now))
+            #self.window.destroy()
+            try:
+                self.noteWindow.destroy()
+            except:
+                return
+            #self.loggedin(noteslist,contentlist)
 
     def newNote(self,event=None):
         self.noteWindow = tk.Tk()
@@ -286,7 +295,7 @@ class guisetup():
         self.loginWindow.bind('<Return>', self.getPassword)
 
         self.loginWindow.configure(bg='black')
-        self.loginWindow.geometry("512x512")
+        self.loginWindow.minsize(512,512)
         self.loginWindow.title("SafeNotes - Locked")
         self.loginWindow.mainloop()        
     
@@ -305,6 +314,11 @@ class guisetup():
         
         self.createGUI()
         return 'break'
+
+    def dupe(self,pos):
+        self.addToDb(self.lb.get(self.lb.curselection()),self.contentlist[list(pos)[0]])
+        print("Duplicated note " + str(pos))
+
 
     def loggedin(self,noteslist,contentlist):
         self.noteslist = noteslist
@@ -335,6 +349,8 @@ class guisetup():
         
         self.editbutton = tk.Button(text="Edit",command=lambda: self.editNoteGUI(self.lb.curselection(),self.lb.get(self.lb.curselection()),self.contentlist[list(self.lb.curselection())[0]]))
         self.editbutton.pack(in_=self.right,fill="x",side='left')
+        self.dupeButton = tk.Button(text="Duplicate",command=lambda: self.dupe(self.lb.curselection()))
+        self.dupeButton.pack(in_=self.right,fill='x',side='left')
         self.deletebutton = tk.Button(text="Delete",command=lambda: self.deleteNote(self.lb.curselection(),self.noteslist))
         self.deletebutton.pack(in_=self.right,side='left')
 
@@ -347,7 +363,7 @@ class guisetup():
         self.timeLabel = tk.Label(self.window,bg='grey',fg='white')
         self.timeLabel.pack(in_=self.bottomNote,side='left')
 
-        self.lockButton = tk.Button(self.window,text="Lock",bg='grey',command=lambda: self.lockApp())
+        self.lockButton = tk.Button(self.window,text="Lock",command=lambda: self.lockApp())
         self.lockButton.pack(in_=self.bottomNote,side='right',anchor='se')
 
         self.window.bind('<Control-l>', self.lockApp)
