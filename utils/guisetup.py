@@ -354,8 +354,8 @@ class guisetup():
         
         windowMiddle = tk.Frame(self.loginWindow,bg='black')
         windowMiddle.pack(expand="yes",anchor="center")
-        #bottomRight = tk.Frame(self.loginWindow,bg='black')
-        #bottomRight.pack(expand='yes',anchor='se')
+        bottomRight = tk.Frame(self.loginWindow,bg='black')
+        bottomRight.pack(expand='no',anchor='se')
 
         title = tk.Label(text="SafeNotes",font=("Arial", 25),bg='black',fg='white')
         title.pack(side="top",in_=windowMiddle)
@@ -369,10 +369,10 @@ class guisetup():
         self.loginButton = tk.Button(text="Unlock",command=self.getPassword,bg='black',fg='white')
         self.loginButton.pack(in_=windowMiddle,pady=3)
         info = tk.Button(self.loginWindow,text='?',bg='black',fg='white',command=self.showAbout)
-        info.pack(in_=windowMiddle)
+        info.pack(in_=bottomRight)
         self.infoText = tk.Label(bg='black')
         self.infoText.pack(in_=windowMiddle)
-                
+
         self.loginWindow.bind('<Return>', self.getPassword)
 
         self.loginWindow.configure(bg='black')
