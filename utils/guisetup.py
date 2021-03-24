@@ -339,7 +339,8 @@ class guisetup():
         self.frWindow.geometry("512x512")
         self.frWindow.mainloop()
 
-
+    def showAbout(self):
+        self.infoText.configure(fg='white',text="SafeNotes is an encrypted note-taking app which protects all user data with industry leading AES-256 bit encryption.\nEnter your password above to view your notes. If you've forgotten your password, you must delete your database and settings file to re-initiate setup.")
 
     def createGUI(self):
         try:
@@ -353,6 +354,8 @@ class guisetup():
         
         windowMiddle = tk.Frame(self.loginWindow,bg='black')
         windowMiddle.pack(expand="yes",anchor="center")
+        #bottomRight = tk.Frame(self.loginWindow,bg='black')
+        #bottomRight.pack(expand='yes',anchor='se')
 
         title = tk.Label(text="SafeNotes",font=("Arial", 25),bg='black',fg='white')
         title.pack(side="top",in_=windowMiddle)
@@ -365,7 +368,11 @@ class guisetup():
 
         self.loginButton = tk.Button(text="Unlock",command=self.getPassword,bg='black',fg='white')
         self.loginButton.pack(in_=windowMiddle,pady=3)
-        
+        info = tk.Button(self.loginWindow,text='?',bg='black',fg='white',command=self.showAbout)
+        info.pack(in_=windowMiddle)
+        self.infoText = tk.Label(bg='black')
+        self.infoText.pack(in_=windowMiddle)
+                
         self.loginWindow.bind('<Return>', self.getPassword)
 
         self.loginWindow.configure(bg='black')
