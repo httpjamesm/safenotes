@@ -1,11 +1,13 @@
 import tkinter as tk
 import tkinter.messagebox
 from functools import partial
-import json
+import json,os
 from utils.classes.aes_encryption import AesEncryption
 from utils.utils_f import utils
 import settings
 import datetime
+
+from tkinter.filedialog import askopenfilename
 
 aes = AesEncryption()
 
@@ -107,6 +109,68 @@ class guisetup():
                 self.contentDisplay.configure(state="disabled")
         return
 
+    def decryptAttachment(self,fileName):
+        aes.decrypt_file(fileName,self.userpass)
+        print("file decrypted successfully, dropped.")
+        tk.messagebox.showinfo("File Decrypted","The requested attachment was successfully decrypted into SafeNotes' working directory.")
+
+    def viewAttachments(self,cursor):
+        print(cursor)
+        pos = len(self.noteslist) - cursor[0] - 1
+
+        self.attachmentViewer = tk.Tk()
+        self.attachmentViewer.title("Attachments for note " + str(cursor[0] + 1))
+
+        with open("database.json","r+") as dbfile:
+            db = json.load(dbfile)
+            notes = db["notes"]
+            try:
+                attachmentslist = notes[pos]["attachments"]
+            except:
+                print("No attachments list was found--warning user")
+                tk.messagebox.showerror("No Attachments","This note has no attachments to view.")
+                self.attachmentViewer.destroy()
+                return
+
+        self.attachmentlb = tk.Listbox(self.attachmentViewer,background='black', fg="white",width=60)
+        self.attachmentlb.pack(side='left',fill="both",expand=True)
+        
+        decryptFile = tk.Button(self.attachmentViewer,text="Decrypt File",command=lambda: self.decryptAttachment(self.attachmentlb.get(self.attachmentlb.curselection())))
+        decryptFile.pack(side='bottom',fill="both",expand=True)
+        for x in attachmentslist:
+            self.attachmentlb.insert("end",x)
+            #self.lb.bind("<<ListboxSelect>>", lambda y: self.contentPopout(self.lb.curselection(),self.datelist,self.contentlist))
+        self.attachmentViewer.mainloop()
+
+    def addAttachment(self,cursor):
+        selectFile = tk.Tk()
+        selectFile.withdraw()
+        filepath = askopenfilename()
+        selectFile.destroy()
+        aes.encrypt_file(filepath, os.getcwd() + "/" + os.path.basename(filepath), self.userpass)
+        print("Encrypted and dropped into " + os.getcwd() + "/" + os.path.basename(filepath) + ".enc")
+        print("Locating and importing JSON into mem")
+        with open("database.json","r+") as dbfile:
+            db = json.load(dbfile)
+            notes = db["notes"]
+            pos = len(self.noteslist) - list(cursor)[0] - 1
+            print("Database position defined as " + str(pos))
+            try:
+                attachmentslist = notes[pos]["attachments"]
+            except:
+                print("No attachments list was found--creating one")
+                attachmentslist = []
+            attachmentslist.append(os.getcwd() + "/" + os.path.basename(filepath) + ".enc")
+            notes[pos]["attachments"] = attachmentslist
+            print("Encrypted attachment path saved in mem database\nWriting to database")
+            dbfile.seek(0)
+            dbfile.truncate(0) # Wipe file
+            self.write_json(db)
+            print("We're done.")
+            self.attachments.configure(text="Attachments: " + str('\n'.join(attachmentslist)))
+            return os.getcwd() + "/" + os.path.basename(filepath) + ".enc"
+
+
     def editNoteGUI(self,cursor,currentName,currentContent,event=None):
         self.editWindow = tk.Tk()
 
@@ -126,8 +190,23 @@ class guisetup():
         self.contentBox.pack(in_=contentFrame)
         self.contentBox.insert('end',currentContent)
 
+        with open("database.json","r+") as dbfile:
+            db = json.load(dbfile)
+            notes = db["notes"]
+            pos = len(self.noteslist) - list(cursor)[0] - 1
+            try:
+                attachmentslist = notes[pos]["attachments"]
+            except:
+                attachmentslist = []
+
+        self.attachments = tk.Label(self.editWindow, text="Attachments: " + str('\n'.join(attachmentslist)))
+        self.attachments.pack(in_=contentFrame)
+
         createButton = tk.Button(self.editWindow,text="Edit",command=lambda: self.editNote(cursor,self.nameBox.get(1.0,'end'),self.contentBox.get(1.0,'end')))
-        createButton.pack(in_=contentFrame,pady=25)
+        createButton.pack(in_=contentFrame)
+
+        addAttachmentButton = tk.Button(self.editWindow,text="Add Attachment",command=lambda: self.addAttachment(cursor))
+        addAttachmentButton.pack(in_=contentFrame)
 
         self.editWindow.title("Edit Secure Note")
         self.editWindow.configure(bg='grey')
@@ -260,6 +339,8 @@ class guisetup():
         self.frWindow.geometry("512x512")
         self.frWindow.mainloop()
 
+
+
     def createGUI(self):
         try:
             dbfile = open("database.json","r")
@@ -355,6 +436,8 @@ class guisetup():
         self.lockButton = tk.Button(self.window,text="Lock",command=lambda: self.lockApp())
         self.lockButton.pack(in_=self.bottomNote,side='right',anchor='se')
 
+        viewAttachments = tk.Button(self.window,text="Attachments",command=lambda: self.viewAttachments(self.lb.curselection()))
+        viewAttachments.pack(in_=self.bottomNote,side='right',anchor='se')
         self.window.bind('<Control-l>', self.lockApp)
         self.window.bind('<Control-n>', self.newNote)
         self.window.bind('<Control-e>',lambda p: self.editNoteGUI(self.lb.curselection(),self.lb.get(self.lb.curselection()),self.contentlist[list(self.lb.curselection())[0]]))

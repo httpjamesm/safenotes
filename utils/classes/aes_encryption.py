@@ -114,7 +114,7 @@ class AesEncryption(object):
         except (TypeError, ValueError, Base64Error) as e: 
             self._error_handler(e)
     
-    def encrypt_file(self, path, password = None):
+    def encrypt_file(self, path, new_path, password = None):
         '''
         Encrypts files using the supplied password or a master key.
 
@@ -134,7 +134,7 @@ class AesEncryption(object):
             aes_key, mac_key = self._keys(salt, password)
             cipher = self._cipher(aes_key, iv)
             hmac = HMAC.new(mac_key, digestmod = SHA256)
-            new_path = path + '.enc'
+            new_path = new_path + '.enc'
 
             with open(new_path, 'wb') as f:
                 f.write(salt + iv)
@@ -189,6 +189,7 @@ class AesEncryption(object):
                     f.write(data)
             return new_path
         except (TypeError, ValueError, IOError) as e: 
+            print("Decryption failed.")
             self._error_handler(e)
     
     def set_master_key(self, key, raw = False):
