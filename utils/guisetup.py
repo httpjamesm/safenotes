@@ -23,7 +23,6 @@ class guisetup():
             del name[-1]
             name = ''.join(name)
         # Add a note to the db file
-
         with open("database.json") as json_file:
             now = datetime.datetime.now()
             data = json.load(json_file)
@@ -53,12 +52,11 @@ class guisetup():
             self.noteslist.insert(0,name)
             self.contentlist.insert(0,content)
             self.datelist.insert(0,str(now))
-            #self.window.destroy()
+
             try:
                 self.noteWindow.destroy()
             except:
                 return
-            #self.loggedin(noteslist,contentlist)
 
     def newNote(self,event=None):
         self.noteWindow = tk.Tk()
@@ -163,7 +161,6 @@ class guisetup():
             self.lb.delete(uipos)
             self.lb.insert(uipos,newname)
             
-            #del notes[pos]
             dbfile.seek(0)
             dbfile.truncate(0) # Wipe file
             # Replace 
@@ -187,14 +184,13 @@ class guisetup():
 
     def getPassword(self,event=None):
         self.userpass = self.passBox.get()
-        #print(self.passBox.get())
         with open("database.json","r") as db:
             noteslist = []
             db = json.load(db)
-            #print(db["notes"])
             try:
                 self.userpass = aes.decrypt(settings.configdata["password"].encode(),self.userpass).decode('utf-8')
             except Exception as e:
+                self.passBox.delete(0,'end')
                 tk.messagebox.showerror("Incorrect Password","The password you entered cannot decrypt note data.")
                 print(e)
                 return
@@ -211,7 +207,6 @@ class guisetup():
             contentlist.reverse()
             self.datelist.reverse()
             self.loggedin(noteslist,contentlist)
-            #contentlist.reverse()
 
             self.userpass = None
     def callback(self,event):
@@ -223,8 +218,6 @@ class guisetup():
         event.widget.icursor('end')
         return 'break'
 
-    
-    
     def finishSetup(self,password):
         import string
         alphabet = string.ascii_letters + string.punctuation + string.digits
@@ -285,7 +278,7 @@ class guisetup():
 
         self.passBox = tk.Entry(self.loginWindow,width=15,bg='black',fg='white')
         self.passBox.configure(show="•")
-        self.passBox.pack(in_=windowMiddle)
+        self.passBox.pack(in_=windowMiddle,expand=True)
         self.passBox.focus()
         self.passBox.bind('<Control-a>',self.callback)
 
@@ -329,7 +322,6 @@ class guisetup():
         
         title = tk.Label(text="SafeNotes",font=("Arial", 25))
 
-        #scrollBar = tk.Scrollbar(self.window, width = 100)
         self.lb = tk.Listbox(self.window,background='black', fg="white",width=60)
         self.lb.pack(side='left',fill="both",expand=True)
         for x in self.noteslist:
@@ -337,12 +329,9 @@ class guisetup():
             self.lb.bind("<<ListboxSelect>>", lambda y: self.contentPopout(self.lb.curselection(),self.datelist,self.contentlist))
 
         self.window.title("SafeNotes - Encrypted Note App")
-        #self.window.geometry("")
 
         self.right = tk.Frame(self.window)
         self.right.pack(side="top")
-
-        #lb.curselection()
 
         newButton = tk.Button(text="New",command=self.newNote)
         newButton.pack(in_=self.right,fill="x",side='left')
