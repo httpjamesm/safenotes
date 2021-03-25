@@ -58,13 +58,7 @@ class preferences():
         self.passWindow.mainloop()
 
     def passCheck(self, old, new, confirmation):
-        try:
-            key = aes.decrypt(settings.configdata["password"].encode(), old)
-        except Exception as e:
-            print(e)
-            tk.messagebox.showerror("Incorrect Password", "You entered the incorrect current password.")
-            return
-        
+        key = aes.decrypt(settings.configdata["password"].encode(), old)        
         if new != confirmation:
             tk.messagebox.showerror("Password Mismatch","The new passwords do not match.")
             return
