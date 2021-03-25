@@ -4,6 +4,7 @@ from functools import partial
 import json,os
 from utils.classes.aes_encryption import AesEncryption
 from utils.utils_f import utils
+from utils.settingspane import preferences
 import settings
 import datetime
 
@@ -424,6 +425,11 @@ class guisetup():
         newButton = tk.Button(text="New",command=self.newNote)
         newButton.pack(in_=self.right,fill="x",side='left')
         
+        topright = tk.Frame(self.window)
+        topright.pack(anchor='ne',side='top')
+        settingsButton = tk.Button(text='⚙',command=lambda: preferences().createWindow())
+        settingsButton.pack(in_=topright)
+
         self.editbutton = tk.Button(text="Edit",command=lambda: self.editNoteGUI(self.lb.curselection(),self.lb.get(self.lb.curselection()),self.contentlist[list(self.lb.curselection())[0]]))
         self.editbutton.pack(in_=self.right,fill="x",side='left')
         self.dupeButton = tk.Button(text="Duplicate",command=lambda: self.dupe(self.lb.curselection()))
@@ -448,6 +454,7 @@ class guisetup():
         self.window.bind('<Control-l>', self.lockApp)
         self.window.bind('<Control-n>', self.newNote)
         self.window.bind('<Control-e>',lambda p: self.editNoteGUI(self.lb.curselection(),self.lb.get(self.lb.curselection()),self.contentlist[list(self.lb.curselection())[0]]))
+        self.window.bind('<Control-comma>', lambda d: preferences().createWindow())
 
         self.window.iconphoto(False,tk.PhotoImage(file='utils/icon.png'))
         self.window.configure(bg='grey')
