@@ -83,8 +83,8 @@ class utils():
             noteslist = []
             db = json.load(db)
             #print(db["notes"])
-            print(userpass)
-            print(settings.configdata["password"].encode())
+            #print(userpass)
+            #print(settings.configdata["password"].encode())
             try:
                 userpass = aes.decrypt(settings.configdata["password"].encode(),userpass).decode('utf-8')
             except:
@@ -102,10 +102,12 @@ class utils():
 
     def reencrypt(self, oldpass, newpass):
         # Re encrypts all content with a new password
+        print('oldpass just got decrypted')
         oldpass = aes.decrypt(settings.configdata["password"].encode(),oldpass).decode('utf-8') # Decode the decryption password with the user's password
         plainpass = newpass # Store the new password in mem
         newpass = self.make_random_password(64,alphabet) # Generate the new encryption key
         with open("database.json","r+") as json_file:
+            print('opened file')
             # Open the db file in read and write mode
             db = json.load(json_file) 
             allnotes = db["notes"] # load all encrypted content in mem

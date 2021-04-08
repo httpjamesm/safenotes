@@ -1,7 +1,8 @@
 import tkinter as tk
 import tkinter.messagebox
 from functools import partial
-import json,os
+import json
+import os
 from utils.classes.aes_encryption import AesEncryption
 from utils.utils_f import utils
 from utils.settingspane import preferences
@@ -88,11 +89,11 @@ class guisetup():
         
     def deleteNote(self,pos,allnotes):
         decision = tk.messagebox.askyesno(title="Are you sure?", message="Note deletion is permanent, do you wish to proceed?")
-        if decision == True:
+        if decision is True:
             uipos = list(pos)[0]
             pos = len(allnotes) - list(pos)[0] - 1
             with open("database.json","r+") as dbfile:
-                db = json.load(dbfile)
+                #db = json.load(dbfile)
                 notes = db["notes"]
                 del notes[pos]
                 del self.noteslist[uipos]
@@ -108,7 +109,6 @@ class guisetup():
                 self.contentDisplay.configure(state="normal")
                 self.contentDisplay.delete(1.0,"end")
                 self.contentDisplay.configure(state="disabled")
-        return
 
     def decryptAttachment(self,fileName):
         aes.decrypt_file(fileName,self.userpass)
@@ -274,14 +274,20 @@ class guisetup():
                 tk.messagebox.showerror("Incorrect Password","The password you entered cannot decrypt note data.")
                 print(e)
                 return
+            #print(self.userpass)
             self.loginWindow.destroy()
             counter = len(db["notes"])
             contentlist = []
             self.datelist = []
             for x in db["notes"]:
+                #try:
                 noteslist.append(aes.decrypt(x["name"].encode(),self.userpass).decode('utf-8'))
                 contentlist.append(aes.decrypt(x["content"].encode(),self.userpass).decode('utf-8'))
                 self.datelist.append(aes.decrypt(x["time"].encode(),self.userpass).decode('utf-8'))
+                #except:
+                #    noteslist.append("🔐 Encrypted")
+                #    contentlist.append("[SYSTEM] This note could not be decrypted due to an unexpected error.\n\nIs the database.json file corrupted?")
+                #    self.datelist.append("Decryption Error.XXXXXX")
                 counter -= 1
             noteslist.reverse()
             contentlist.reverse()
@@ -332,7 +338,6 @@ class guisetup():
         self.newpassBox = tk.Entry(self.frWindow, width=15)
         self.newpassBox.configure(show="•")
         self.newpassBox.pack(in_=windowMiddle)
-        self.newpassBox.bind('<Control-a>',self.lock_callback)
 
         self.finishButton = tk.Button(text="Finish Setup",command=lambda: self.finishSetup(self.newpassBox.get()))
         self.finishButton.pack(in_=windowMiddle)
@@ -392,6 +397,8 @@ class guisetup():
         except:
             print("editNoteGUI already destroyed")
         
+        preferences().killWindows()
+
         self.userpass = None
         
         self.createGUI()
@@ -400,8 +407,7 @@ class guisetup():
     def dupe(self,pos):
         self.addToDb(self.lb.get(self.lb.curselection()),self.contentlist[list(pos)[0]])
         print("Duplicated note " + str(pos))
-
-
+        
     def loggedin(self,noteslist,contentlist):
         self.noteslist = noteslist
         self.contentlist = contentlist
@@ -427,7 +433,7 @@ class guisetup():
         
         topright = tk.Frame(self.window)
         topright.pack(anchor='ne',side='top')
-        settingsButton = tk.Button(text='⚙',command=lambda: preferences().createWindow())
+        settingsButton = tk.Button(text='⚙',command=lambda: preferences(self.userpass).createWindow())
         settingsButton.pack(in_=topright)
 
         self.editbutton = tk.Button(text="Edit",command=lambda: self.editNoteGUI(self.lb.curselection(),self.lb.get(self.lb.curselection()),self.contentlist[list(self.lb.curselection())[0]]))
@@ -446,7 +452,7 @@ class guisetup():
         self.timeLabel = tk.Label(self.window,bg='grey',fg='white')
         self.timeLabel.pack(in_=self.bottomNote,side='left')
 
-        self.lockButton = tk.Button(self.window,text="Lock",command=lambda: self.lockApp())
+        self.lockButton = tk.Button(self.window,text="Lock",command=self.lockApp)
         self.lockButton.pack(in_=self.bottomNote,side='right',anchor='se')
 
         viewAttachments = tk.Button(self.window,text="Attachments",command=lambda: self.viewAttachments(self.lb.curselection()))
@@ -454,10 +460,9 @@ class guisetup():
         self.window.bind('<Control-l>', self.lockApp)
         self.window.bind('<Control-n>', self.newNote)
         self.window.bind('<Control-e>',lambda p: self.editNoteGUI(self.lb.curselection(),self.lb.get(self.lb.curselection()),self.contentlist[list(self.lb.curselection())[0]]))
-        self.window.bind('<Control-comma>', lambda d: preferences().createWindow())
+        self.window.bind('<Control-comma>', lambda d: preferences(self.userpass).createWindow())
 
         self.window.iconphoto(False,tk.PhotoImage(file='utils/icon.png'))
         self.window.configure(bg='grey')
         self.window.minsize(512,512)
         self.window.mainloop()
-

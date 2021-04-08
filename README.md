@@ -1,6 +1,6 @@
 # safenotes
 
-SafeNotes is an app written in Python that utilizes AES-256 bit encryption technology to securely store notes.
+SafeNotes is an app written in Python that utilizes strong encryption technology to securely store notes.
 
 ## Features
 
