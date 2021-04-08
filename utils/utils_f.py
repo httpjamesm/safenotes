@@ -1,13 +1,12 @@
 #!/usr/bin/python
 
-import json,string,os
+import json
+import string
+import os
 import settings
 import datetime
 from getpass import getpass
 from utils.classes.aes_encryption import AesEncryption
-
-import settings
-
 aes = AesEncryption()
 
 alphabet = string.ascii_letters + string.punctuation + string.digits
@@ -151,7 +150,3 @@ class utils():
 
         oldpass = None
         newpass = None
-                
-
-
-
