@@ -1,5 +1,9 @@
 #!/usr/bin/python
-import json, datetime,sys,string,os
+import json
+import datetime
+import sys
+import string
+import os
 
 from utils.classes.aes_encryption import AesEncryption
 from utils.guisetup import guisetup
