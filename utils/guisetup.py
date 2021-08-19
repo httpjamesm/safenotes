@@ -93,7 +93,7 @@ class guisetup():
             uipos = list(pos)[0]
             pos = len(allnotes) - list(pos)[0] - 1
             with open("database.json","r+") as dbfile:
-                #db = json.load(dbfile)
+                db = json.load(dbfile)
                 notes = db["notes"]
                 del notes[pos]
                 del self.noteslist[uipos]
