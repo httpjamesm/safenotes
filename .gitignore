@@ -4,3 +4,6 @@ utils/classes/__pycache__/
 
 settings.json
 database.json
+
+*.enc
+*.dec

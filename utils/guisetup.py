@@ -117,7 +117,11 @@ class guisetup():
 
     def viewAttachments(self,cursor):
         print(cursor)
-        pos = len(self.noteslist) - cursor[0] - 1
+        try:
+            pos = len(self.noteslist) - cursor[0] - 1
+        except:
+            print("No attachments for this note.")
+            return
 
         self.attachmentViewer = tk.Tk()
         self.attachmentViewer.title("Attachments for note " + str(cursor[0] + 1))
